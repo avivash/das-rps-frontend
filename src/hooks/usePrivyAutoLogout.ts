@@ -18,7 +18,7 @@ export function usePrivyAutoLogout() {
       setLoggingIn(false)
     }
 
-    if (disconnectedTooLong && isDisconnected && ready && !loggingIn) {
+    if (disconnectedTooLong && (isDisconnected || !user) && ready && !loggingIn) {
       setSigRequested(false);
       setKeyStorage({key: '', wallet: ''});
       setCachedAddress('');
