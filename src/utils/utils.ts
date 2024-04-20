@@ -95,7 +95,6 @@ export const clientURL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:3000"
     : "https://das-rps-frontend.onrender.com";
-// export const clientURL = `https://rps.sh`;
 
 invariant(activeChainConfig, "No chain config found for chain ID");
 export const EASContractAddress = activeChainConfig.contractAddress;
