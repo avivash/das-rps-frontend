@@ -270,7 +270,7 @@ function Summary() {
       case CUSTOM_SCHEMAS.COMMIT_HASH:
         return "Player Move";
       case CUSTOM_SCHEMAS.FINALIZE_GAME:
-        return "EAS Game Summary";
+        return "DAS Game Summary";
     }
   });
 
