@@ -89,7 +89,7 @@ export const activeChainConfig = EAS_CHAIN_CONFIGS.find(
 export const baseURL =
   process.env.NODE_ENV === "development"
     ? `http://localhost:8080/api`
-    : `https://das-rps-backend.onrender.com/`;
+    : `https://das-rps-backend.onrender.com`;
 
 export const clientURL =
   process.env.NODE_ENV === "development"
