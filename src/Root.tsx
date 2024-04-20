@@ -70,8 +70,6 @@ const allChains: ChainConfig[] = [
   },
 ];
 
-console.log("chains", chains);
-
 const usableChains = allChains.map((chain) => chain.chain);
 
 const config = configureChains(usableChains, [publicProvider()]);

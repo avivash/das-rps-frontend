@@ -42,7 +42,7 @@ function getChainId() {
 }
 
 export const CHAINID = getChainId();
-console.log("CHAINID", CHAINID);
+
 invariant(CHAINID, "No chain ID env found");
 
 export const EAS_CHAIN_CONFIGS: EASChainConfig[] = [
@@ -85,14 +85,16 @@ export const EAS_CHAIN_CONFIGS: EASChainConfig[] = [
 export const activeChainConfig = EAS_CHAIN_CONFIGS.find(
   (config) => config.chainId === CHAINID
 );
-console.log("activeChainConfig", activeChainConfig);
 
 export const baseURL =
   process.env.NODE_ENV === "development"
     ? `http://localhost:8080/api`
-    : `https://rps.sh/api`;
+    : `https://das-rps-backend.onrender.com/`;
 
-export const clientURL = `http://localhost:3000`;
+export const clientURL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:3000"
+    : "https://das-rps-frontend.onrender.com";
 // export const clientURL = `https://rps.sh`;
 
 invariant(activeChainConfig, "No chain config found for chain ID");

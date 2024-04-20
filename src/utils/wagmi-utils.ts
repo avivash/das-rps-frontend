@@ -6,7 +6,7 @@ import { usePrivyWagmi } from "@privy-io/wagmi-connector";
 
 export async function walletClientToSigner(walletClient: WalletClient) {
   const { account, chain, transport } = walletClient;
-  console.log("chain", chain);
+
   const network = {
     chainId: chain.id,
     name: chain.name,
@@ -25,14 +25,13 @@ export function useSigner() {
   useEffect(() => {
     async function getSigner() {
       if (!walletClient) return;
-      console.log("walletClient", walletClient);
 
       try {
         const tmpSigner = await walletClientToSigner(walletClient);
 
         setSigner(tmpSigner);
       } catch (e) {
-        console.log("error", e);
+        console.error(e);
       }
     }
 
