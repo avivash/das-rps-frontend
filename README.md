@@ -1,6 +1,6 @@
-# Rock-Paper-Scissors (RPS) with Offchain EAS Attestations
+# Rock-Paper-Scissors (RPS) with Offchain DAS Attestations
 
-RPS is a decentralized implementation of the classic Rock-Paper-Scissors game, utilizing EAS offchain attestations to ensure a secure and trustless gameplay experience. This project aims to demonstrate how offchain attestations can be used in decentralized applications to enhance transparency and integrity.
+RPS is a decentralized implementation of the classic Rock-Paper-Scissors game, utilizing DAS offchain attestations to ensure a secure and trustless gameplay experience. This project aims to demonstrate how offchain attestations can be used in decentralized applications to enhance transparency and integrity.
 
 Check out [RPS.sh](https://rps.sh) to play the live version.
 
@@ -33,19 +33,20 @@ To run the RPS project locally:
 Ensure that you have Node.js and npm installed before proceeding.
 
 1. Install typescript and ts-node if not done already:
+
    ```bash
    npm install -g ts-node typescript
    ```
 
-2. [Clone the backend repo](https://github.com/ethereum-attestation-service/eas-rps-backend) and follow setup instructions to get the attestation storage server running locally.
+2. [Clone the backend repo](https://github.com/avivash/das-rps-backend) and follow setup instructions to get the attestation storage server running locally.
 
 3. Clone the frontend repo:
    ```bash
-   git clone https://github.com/ethereum-attestation-service/eas-rps-frontend.git
+   git clone https://github.com/avivash/das-rps-frontend.git
    ```
 4. Install dependencies:
    ```bash
-   cd eas-rps-frontend
+   cd das-rps-frontend
    npm i
    ```
 5. Copy the .env.example file using the command below. Set up your .env file with your Alchemy API key (for resolving ENS names).
@@ -56,5 +57,4 @@ Ensure that you have Node.js and npm installed before proceeding.
    ```bash
    npm run start
    ```
-After completing these steps, the RPS frontend display will be shown on port 3000.
-   
+   After completing these steps, the RPS frontend display will be shown on port 3000.
