@@ -1,16 +1,13 @@
 import invariant from "tiny-invariant";
-import type {
-  EASChainConfig,
-  Game,
-} from "./types";
-import {StoreAttestationRequest, StoreIPFSActionReturn} from "./types";
+import type { EASChainConfig, Game } from "./types";
+import { StoreAttestationRequest, StoreIPFSActionReturn } from "./types";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import relativeTime from "dayjs/plugin/relativeTime";
-import {ethers} from "ethers";
-import {AttestationShareablePackageObject} from "@ethereum-attestation-service/eas-sdk";
+import { ethers } from "ethers";
+import { AttestationShareablePackageObject } from "@ethereum-attestation-service/eas-sdk";
 import axios from "axios";
-import {KeyStorage} from "../hooks/useStore";
+import { KeyStorage } from "../hooks/useStore";
 import aesjs from "aes-js";
 
 const easLogo = "/images/rps/easlogo.png";
@@ -45,6 +42,7 @@ function getChainId() {
 }
 
 export const CHAINID = getChainId();
+console.log("CHAINID", CHAINID);
 invariant(CHAINID, "No chain ID env found");
 
 export const EAS_CHAIN_CONFIGS: EASChainConfig[] = [
@@ -70,18 +68,32 @@ export const EAS_CHAIN_CONFIGS: EASChainConfig[] = [
     etherscanURL: "https://etherscan.io",
     rpcProvider: `https://mainnet.infura.io/v3/`,
   },
+  {
+    chainId: 666666666,
+    chainName: "degen",
+    subdomain: "",
+    version: "1",
+    contractAddress: "0x614DBbEC22e399C56bC416Bc82D89F9a017A3935",
+    schemaRegistryAddress: "0x20A428B16C012805D150f469BDE9123180AC8AE9",
+    contractStartBlock: 7113279,
+    // contractStartBlock: 1713415547,
+    etherscanURL: "https://explorer.degen.tips",
+    rpcProvider: "https://rpc.degen.tips",
+  },
 ];
 
 export const activeChainConfig = EAS_CHAIN_CONFIGS.find(
   (config) => config.chainId === CHAINID
 );
+console.log("activeChainConfig", activeChainConfig);
 
-export const baseURL = process.env.NODE_ENV === "development" ?
-  `http://localhost:8080/api` :
-  `https://rps.sh/api`;
+export const baseURL =
+  process.env.NODE_ENV === "development"
+    ? `http://localhost:8080/api`
+    : `https://rps.sh/api`;
 
-// export const clientURL = `http://localhost:3000`;
-export const clientURL = `https://rps.sh`;
+export const clientURL = `http://localhost:3000`;
+// export const clientURL = `https://rps.sh`;
 
 invariant(activeChainConfig, "No chain config found for chain ID");
 export const EASContractAddress = activeChainConfig.contractAddress;
@@ -159,20 +171,20 @@ export const addPlusIfPositive = (num: number) => {
 };
 
 export const playLinks = [
-  {name: "New", url: "/"},
-  {name: "Incoming", url: "/challenges"},
-  {name: "Active", url: "/ongoing"},
+  { name: "New", url: "/" },
+  { name: "Incoming", url: "/challenges" },
+  { name: "Active", url: "/ongoing" },
 ];
 
 export const profileLinks = [
-  {name: "QR Code", url: "/qr"},
-  {name: "History", url: "/games"},
-  {name: "Graph", url: "/graph"},
+  { name: "QR Code", url: "/qr" },
+  { name: "History", url: "/games" },
+  { name: "Graph", url: "/graph" },
 ];
 
 export const leaderboardLinks = [
-  {name: "Global", url: "/leaderboard/global"},
-  {name: "Local", url: "/leaderboard/local"},
+  { name: "Global", url: "/leaderboard/global" },
+  { name: "Local", url: "/leaderboard/local" },
 ];
 
 export function formatAttestationLongValueV2(address: string) {
@@ -188,74 +200,97 @@ export function badgeNameToLogo(badgeName: string) {
   }
 }
 
-const LOCAL_KEY_SEED = 'Signing this message makes your rps.sh account accessible to you on any device.\n\n' +
-  'DO NOT SHARE YOUR SIGNATURE WITH ANYONE. DO NOT SIGN THIS EXACT MESSAGE FOR ANY APP EXCEPT rps.sh. ';
+const LOCAL_KEY_SEED =
+  "Signing this message makes your rps.sh account accessible to you on any device.\n\n" +
+  "DO NOT SHARE YOUR SIGNATURE WITH ANYONE. DO NOT SIGN THIS EXACT MESSAGE FOR ANY APP EXCEPT rps.sh. ";
 
-
-async function generateAndStoreLocalKey(signer: ethers.Signer,
-                                        setKeyStorage: (ks: KeyStorage) => void,
-                                        setSigRequested: (b: boolean) => void){
+async function generateAndStoreLocalKey(
+  signer: ethers.Signer,
+  setKeyStorage: (ks: KeyStorage) => void,
+  setSigRequested: (b: boolean) => void
+) {
   const key = await signer.signMessage(LOCAL_KEY_SEED).catch(() => {
     setSigRequested(false);
-    return '';
+    return "";
   });
-  setKeyStorage({key, wallet: await signer.getAddress()});
+  setKeyStorage({ key, wallet: await signer.getAddress() });
   return key;
 }
 
-export async function getLocalKey(signer: ethers.Signer, keyStorage: KeyStorage,
-                                  setKeyStorage: (ks: KeyStorage) => void,
-                                  setSigRequested: (b: boolean) => void){
-  if (keyStorage.key.length > 0 && keyStorage.wallet === await signer.getAddress()) {
+export async function getLocalKey(
+  signer: ethers.Signer,
+  keyStorage: KeyStorage,
+  setKeyStorage: (ks: KeyStorage) => void,
+  setSigRequested: (b: boolean) => void
+) {
+  if (
+    keyStorage.key.length > 0 &&
+    keyStorage.wallet === (await signer.getAddress())
+  ) {
     return keyStorage.key;
   } else {
-    return await generateAndStoreLocalKey(signer, setKeyStorage,setSigRequested);
+    return await generateAndStoreLocalKey(
+      signer,
+      setKeyStorage,
+      setSigRequested
+    );
   }
 }
 
 function hexStrToLastNBytesBuffer(hexStr: string, n: number) {
-  return Buffer.from(hexStr.slice(-2*n), 'hex');
+  return Buffer.from(hexStr.slice(-2 * n), "hex");
 }
 
 function padWithZerosUntilMultipleOf16Bytes(hexStr: string) {
   const length = hexStr.length;
   const padding = (32 - (length % 32)) % 32;
-  return hexStr + '0'.repeat(padding);
+  return hexStr + "0".repeat(padding);
 }
 
-export async function encryptWithLocalKey(signer: ethers.Signer,
-                                          choice: number,
-                                          saltHex: string,
-                                          gameUID: string,
-                                          keyStorage: KeyStorage,
-                                          setKeyStorage: (ks: KeyStorage) => void,
-                                          setSigRequested: (b: boolean) => void){
-  const keyHexStr = await getLocalKey(signer, keyStorage, setKeyStorage,setSigRequested);
+export async function encryptWithLocalKey(
+  signer: ethers.Signer,
+  choice: number,
+  saltHex: string,
+  gameUID: string,
+  keyStorage: KeyStorage,
+  setKeyStorage: (ks: KeyStorage) => void,
+  setSigRequested: (b: boolean) => void
+) {
+  const keyHexStr = await getLocalKey(
+    signer,
+    keyStorage,
+    setKeyStorage,
+    setSigRequested
+  );
   const keyBuffer32Bytes = hexStrToLastNBytesBuffer(keyHexStr, 32);
   const initVector = hexStrToLastNBytesBuffer(gameUID, 16);
   const aesCbc = new aesjs.ModeOfOperation.cbc(keyBuffer32Bytes, initVector);
-  const paddedHexData = padWithZerosUntilMultipleOf16Bytes(`0${choice}${saltHex.slice(2)}`);
-  const dataBuffer = Buffer.from(paddedHexData, 'hex');
-  const result =  Buffer.from(aesCbc.encrypt(dataBuffer)).toString('hex');
+  const paddedHexData = padWithZerosUntilMultipleOf16Bytes(
+    `0${choice}${saltHex.slice(2)}`
+  );
+  const dataBuffer = Buffer.from(paddedHexData, "hex");
+  const result = Buffer.from(aesCbc.encrypt(dataBuffer)).toString("hex");
   return `0x${result}`;
 }
 
-export async function decryptWithLocalKey(encryptedHex: string,
-                                          gameUID: string,
-                                          keyStorage: KeyStorage) {
+export async function decryptWithLocalKey(
+  encryptedHex: string,
+  gameUID: string,
+  keyStorage: KeyStorage
+) {
   try {
     const keyHexStr = keyStorage.key;
     if (!keyHexStr || keyHexStr.length === 0) {
-      return {choice: CHOICE_UNKNOWN, salt: '0x'};
+      return { choice: CHOICE_UNKNOWN, salt: "0x" };
     }
     const keyBuffer32Bytes = hexStrToLastNBytesBuffer(keyHexStr, 32);
     const initVector = hexStrToLastNBytesBuffer(gameUID, 16);
-    const encrypted = Buffer.from(encryptedHex.slice(2), 'hex');
+    const encrypted = Buffer.from(encryptedHex.slice(2), "hex");
     const aesCbc = new aesjs.ModeOfOperation.cbc(keyBuffer32Bytes, initVector);
     const decrypted = aesCbc.decrypt(encrypted);
-    const result = Buffer.from(decrypted).toString('hex');
-    return {choice: parseInt(result[1]), salt: `0x${result.slice(2,66)}`};
+    const result = Buffer.from(decrypted).toString("hex");
+    return { choice: parseInt(result[1]), salt: `0x${result.slice(2, 66)}` };
   } catch (e) {
-    return {choice: CHOICE_UNKNOWN, salt: '0x'};
+    return { choice: CHOICE_UNKNOWN, salt: "0x" };
   }
 }

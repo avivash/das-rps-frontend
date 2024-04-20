@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import {
   playLinks,
   CUSTOM_SCHEMAS,
   EASContractAddress,
-  getAddressForENS,
+  // getAddressForENS,
   RPS_GAME_UID,
   submitSignedAttestation,
 } from "./utils/utils";
@@ -14,82 +14,80 @@ import {
   SchemaEncoder,
 } from "@ethereum-attestation-service/eas-sdk";
 import invariant from "tiny-invariant";
-import {ethers} from "ethers";
-import {useSearchParams} from "react-router-dom";
-import {useNavigate, useParams} from "react-router";
+import { ethers } from "ethers";
+import { useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import dayjs from "dayjs";
-import {useSigner} from "./utils/wagmi-utils";
-import {useStore} from "./hooks/useStore";
+import { useSigner } from "./utils/wagmi-utils";
+import { useStore } from "./hooks/useStore";
 import Start from "./Start";
 import MiniHeader from "./components/MiniHeader";
-import {usePrivy} from "@privy-io/react-auth";
-import {globalMaxWidth} from "./components/MaxWidthDiv";
+import { usePrivy } from "@privy-io/react-auth";
+import { globalMaxWidth } from "./components/MaxWidthDiv";
 import AwaitingSignerMessage from "./components/AwaitingSignerMessage";
 
 const Container = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    height: 100%;
-    padding: 0 20px 20px 20px;
-    box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  height: 100%;
+  padding: 0 20px 20px 20px;
+  box-sizing: border-box;
 `;
 
 const StartButton = styled.div`
-    border-radius: 8px;
-    background: rgba(46, 196, 182, 0.33);
-    color: #fff;
-    font-family: Nunito, serif;
-    font-size: 18px;
-    font-weight: 700;
-    width: 100%;
-    padding: 30px 0;
-    margin: 20px 0; // Adds space above and below the button
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    max-width: ${globalMaxWidth};
+  border-radius: 8px;
+  background: rgba(46, 196, 182, 0.33);
+  color: #fff;
+  font-family: Nunito, serif;
+  font-size: 18px;
+  font-weight: 700;
+  width: 100%;
+  padding: 30px 0;
+  margin: 20px 0; // Adds space above and below the button
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: ${globalMaxWidth};
 `;
 
-
 const BigText = styled.div`
-    text-align: center;
-    font-family: Ubuntu, serif;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 700;
-    color: rgb(80, 80, 80);
-    padding: 20px 0;
+  text-align: center;
+  font-family: Ubuntu, serif;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  color: rgb(80, 80, 80);
+  padding: 20px 0;
 `;
 
 const Input = styled.input`
-    text-align: center;
-    font-family: Ubuntu, serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    width: 100%;
-    padding: 25px 0;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    outline: none;
-    max-width: ${globalMaxWidth};
-    box-sizing: border-box;
+  text-align: center;
+  font-family: Ubuntu, serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  width: 100%;
+  padding: 25px 0;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  outline: none;
+  max-width: ${globalMaxWidth};
+  box-sizing: border-box;
 `;
 
-
 const MiniHeaderContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 400px;
-    box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
 `;
 
 function Home() {
-  const {preComputedRecipient} = useParams();
+  const { preComputedRecipient } = useParams();
 
   const [address, setAddress] = useState(preComputedRecipient || "");
   const [stakes, setStakes] = useState("");
@@ -98,20 +96,20 @@ function Home() {
   const [ensResolvedAddress, setEnsResolvedAddress] = useState("");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const {user} = usePrivy();
-  const cachedAddress = useStore((state) => state.cachedAddress)
+  const { user } = usePrivy();
+  const cachedAddress = useStore((state) => state.cachedAddress);
   const myAddress = user?.wallet?.address || cachedAddress;
 
   const issueChallenge = async () => {
     invariant(address, "Address should be defined");
-    const recipient = ensResolvedAddress || address;
+    const recipient = address;
 
     setAttesting(true);
     try {
       const schemaEncoder = new SchemaEncoder("string stakes");
 
       const encoded = schemaEncoder.encodeData([
-        {name: "stakes", type: "string", value: stakes},
+        { name: "stakes", type: "string", value: stakes },
       ]);
 
       const eas = new EAS(EASContractAddress);
@@ -160,35 +158,18 @@ function Home() {
     }
   }, []);
 
-  useEffect(() => {
-    async function checkENS() {
-      if (address.includes(".eth")) {
-        const tmpAddress = await getAddressForENS(address);
-        if (tmpAddress) {
-          setEnsResolvedAddress(tmpAddress);
-        } else {
-          setEnsResolvedAddress("");
-        }
-      } else {
-        setEnsResolvedAddress("");
-      }
-    }
-
-    checkENS();
-  }, [address]);
-
   return (
     <>
       {myAddress ? (
         <Container>
           <MiniHeaderContainer>
-            <MiniHeader links={playLinks} selected={0}/>
+            <MiniHeader links={playLinks} selected={0} />
           </MiniHeaderContainer>
           {/*<FistsImage src={newChallengeFists} />*/}
           <BigText>Who are you battling?</BigText>
           <Input
             type="text"
-            placeholder="Type in address or ENS name..."
+            placeholder="Type in address..."
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             autoCorrect={"off"}
@@ -202,25 +183,27 @@ function Home() {
             value={stakes}
             onChange={(e) => setStakes(e.target.value)}
           />
-          {signer ? <StartButton
-            style={
-              ethers.isAddress(ensResolvedAddress || address) && !attesting
-                ? {backgroundColor: "#2EC4B6", cursor: "pointer"}
-                : {}
-            }
-            onClick={
-              ethers.isAddress(ensResolvedAddress || address) && !attesting
-                ? issueChallenge
-                : () => {
-                }
-            }
-          >
-            {attesting ? 'Starting...' : 'Start Battle'}
-          </StartButton> : <AwaitingSignerMessage/>
-          }
+          {signer ? (
+            <StartButton
+              style={
+                ethers.isAddress(address) && !attesting
+                  ? { backgroundColor: "#2EC4B6", cursor: "pointer" }
+                  : {}
+              }
+              onClick={
+                ethers.isAddress(address) && !attesting
+                  ? issueChallenge
+                  : () => {}
+              }
+            >
+              {attesting ? "Starting..." : "Start Battle"}
+            </StartButton>
+          ) : (
+            <AwaitingSignerMessage />
+          )}
         </Container>
       ) : (
-        <Start/>
+        <Start />
       )}
     </>
   );

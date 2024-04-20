@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import SpriteText from "three-spritetext";
 import * as THREE from "three";
-import ForceGraph3D  from "react-force-graph-3d";
+import ForceGraph3D from "react-force-graph-3d";
 import axios from "axios";
 import { useAccount } from "wagmi";
 import GraphGameListModal from "./components/GraphGameListModal";

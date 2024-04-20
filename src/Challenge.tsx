@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import {
   baseURL,
@@ -19,7 +19,7 @@ import {
 } from "./utils/utils";
 
 import invariant from "tiny-invariant";
-import {useNavigate, useParams} from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 import {
   AttestationShareablePackageObject,
@@ -28,46 +28,44 @@ import {
   ZERO_ADDRESS,
   ZERO_BYTES32,
 } from "@ethereum-attestation-service/eas-sdk";
-import {ethers} from "ethers";
+import { ethers } from "ethers";
 import dayjs from "dayjs";
-import {useSigner} from "./utils/wagmi-utils";
-import {useStore} from "./hooks/useStore";
-import {
-  GameWithPlayers,
-} from "./utils/types";
+import { useSigner } from "./utils/wagmi-utils";
+import { useStore } from "./hooks/useStore";
+import { GameWithPlayers } from "./utils/types";
 import axios from "axios";
 import PlayerCard from "./components/PlayerCard";
-import {usePrivy} from "@privy-io/react-auth";
+import { usePrivy } from "@privy-io/react-auth";
 import InGameChosenIcon from "./components/InGameChosenIcon";
 import AwaitingSignerMessage from "./components/AwaitingSignerMessage";
 
 const Vs = styled.div`
-    text-align: center;
-    font-family: Racing Sans One;
-    font-size: 80px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 34px; /* 42.5% */
-    padding: 20px;
+  text-align: center;
+  font-family: Racing Sans One;
+  font-size: 80px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 34px; /* 42.5% */
+  padding: 20px;
 `;
 
 type GameStatusProps = { status: number };
 
 const GameContainer = styled.div<GameStatusProps>`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: ${({status}) =>
-            status === STATUS_PLAYER1_WIN
-                    ? "rgba(46, 196, 182, 0.33)"
-                    : status === STATUS_PLAYER2_WIN
-                            ? "rgba(255, 0, 28, 0.33)"
-                            : status === STATUS_DRAW
-                                    ? "rgba(255, 220, 0, 0.33)"
-                                    : "none"};
-    padding: 0 1.2rem 1.2rem 1.2rem;
-    box-sizing: border-box;
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: ${({ status }) =>
+    status === STATUS_PLAYER1_WIN
+      ? "rgba(46, 196, 182, 0.33)"
+      : status === STATUS_PLAYER2_WIN
+      ? "rgba(255, 0, 28, 0.33)"
+      : status === STATUS_DRAW
+      ? "rgba(255, 220, 0, 0.33)"
+      : "none"};
+  padding: 0 1.2rem 1.2rem 1.2rem;
+  box-sizing: border-box;
+  min-height: 100vh;
 `;
 
 type WaitingTextProps = { isPlayer1: boolean };
@@ -79,74 +77,75 @@ const blinkAnimation = `@keyframes blink {
 }`;
 
 const WaitingText = styled.div<WaitingTextProps>`
-    color: #272343;
-    text-align: center;
-    -webkit-text-stroke-color: ${({isPlayer1}) =>
-            isPlayer1 ? "#00ebcf" : "#C8B3F5"};
-    -webkit-text-stroke-width: 2px;
-    font-family: Ubuntu;
-    font-size: 28px;
-    font-style: italic;
-    font-weight: 700;
-    line-height: 34px;
-    padding: 20px;
-    margin: 5px 0;
-    animation: ${blinkAnimation} 1.5s linear infinite;
+  color: #272343;
+  text-align: center;
+  -webkit-text-stroke-color: ${({ isPlayer1 }) =>
+    isPlayer1 ? "#00ebcf" : "#C8B3F5"};
+  -webkit-text-stroke-width: 2px;
+  font-family: Ubuntu;
+  font-size: 28px;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 34px;
+  padding: 20px;
+  margin: 5px 0;
+  animation: ${blinkAnimation} 1.5s linear infinite;
 `;
 
 const HandSelection = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-    margin: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 20px;
 `;
 
 const HandOption = styled.div`
-    border-radius: 5px;
-    border: 1px solid rgba(57, 53, 84, 0.26);
-    background: #fff;
-    width: 110px;
-    height: 104px;
-    flex-shrink: 0;
-    display: flex;
-    justify-content: center;
-    cursor: pointer;
-    align-items: center;
-    font-size: 60px;
+  border-radius: 5px;
+  border: 1px solid rgba(57, 53, 84, 0.26);
+  background: #fff;
+  width: 110px;
+  height: 104px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+  align-items: center;
+  font-size: 60px;
 `;
 
 const PlayerContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin: 10px 0;
 `;
 
 const PlayerStatus = styled.div`
-    display: flex;
-    width: 100%;
-    text-align: center;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-    flex-direction: column;
+  display: flex;
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  flex-direction: column;
 `;
 
 function Challenge() {
-  const {user} = usePrivy();
+  const { user } = usePrivy();
   const navigate = useNavigate();
-  const {challengeId} = useParams();
+  const { challengeId } = useParams();
   const signer = useSigner();
   const cachedAddress = useStore((state) => state.cachedAddress);
   const address = user?.wallet?.address || cachedAddress;
   const [tick, setTick] = useState(0);
   const [game, setGame] = useState<GameWithPlayers>();
   const [attesting, setAttesting] = useState(false);
-  const [decrpytedChoice, setDecryptedChoice] = useState<number>(CHOICE_UNKNOWN);
+  const [decrpytedChoice, setDecryptedChoice] =
+    useState<number>(CHOICE_UNKNOWN);
 
   const gameCommits = useStore((state) => state.gameCommits);
 
@@ -184,7 +183,7 @@ function Challenge() {
       tmpGame.player1Object = tmpPlayerObject;
     }
     return tmpGame;
-  }
+  };
 
   const update = async () => {
     //query server for game status
@@ -193,10 +192,21 @@ function Challenge() {
     });
     // swap players if we are player 2
     const swappedGame = swapPlayersIfNecessary(gameRes.data);
-    const keyInPlace = signer && keyStorage.key.length > 0 && keyStorage.wallet === await signer.getAddress();
+    const keyInPlace =
+      signer &&
+      keyStorage.key.length > 0 &&
+      keyStorage.wallet === (await signer.getAddress());
     if (user && keyInPlace) {
-      const {choice} = await decryptWithLocalKey(swappedGame.encryptedChoice1, challengeId, keyStorage);
-      if (choice === CHOICE_ROCK || choice === CHOICE_PAPER || choice === CHOICE_SCISSORS) {
+      const { choice } = await decryptWithLocalKey(
+        swappedGame.encryptedChoice1,
+        challengeId,
+        keyStorage
+      );
+      if (
+        choice === CHOICE_ROCK ||
+        choice === CHOICE_PAPER ||
+        choice === CHOICE_SCISSORS
+      ) {
         setDecryptedChoice(choice);
       }
     }
@@ -214,7 +224,7 @@ function Challenge() {
 
   useEffect(() => {
     if (game) {
-      setGame(swapPlayersIfNecessary(game))
+      setGame(swapPlayersIfNecessary(game));
     }
   }, [game, address]);
 
@@ -234,7 +244,9 @@ function Challenge() {
     setAttesting(true);
 
     try {
-      const schemaEncoder = new SchemaEncoder("bytes32 commitHash,bytes encryptedChoice");
+      const schemaEncoder = new SchemaEncoder(
+        "bytes32 commitHash,bytes encryptedChoice"
+      );
 
       // create random bytes32 salt
       const salt = ethers.randomBytes(32);
@@ -248,15 +260,22 @@ function Challenge() {
       if (!signer) {
         alert("No signer found, attempting to connect...");
         window.location.reload();
-        return
+        return;
       }
 
-      const encryptedChoice = await encryptWithLocalKey(signer, choice, saltHex, challengeId, keyStorage,
-        setKeyStorage, setSigRequested);
+      const encryptedChoice = await encryptWithLocalKey(
+        signer,
+        choice,
+        saltHex,
+        challengeId,
+        keyStorage,
+        setKeyStorage,
+        setSigRequested
+      );
 
       const encoded = schemaEncoder.encodeData([
-        {name: "commitHash", type: "bytes32", value: hashedChoice},
-        {name: "encryptedChoice", type: "bytes", value: encryptedChoice},
+        { name: "commitHash", type: "bytes32", value: hashedChoice },
+        { name: "encryptedChoice", type: "bytes", value: encryptedChoice },
       ]);
 
       const eas = new EAS(EASContractAddress);
@@ -320,9 +339,13 @@ function Challenge() {
         />
         <PlayerStatus>
           {game.commit2 === ZERO_BYTES32 ? (
-            <WaitingText isPlayer1={false}>Waiting For Opponent Choice...</WaitingText>
+            <WaitingText isPlayer1={false}>
+              Waiting For Opponent Choice...
+            </WaitingText>
           ) : (
-            <WaitingText isPlayer1={false}>Waiting For Opponent Reveal...</WaitingText>
+            <WaitingText isPlayer1={false}>
+              Waiting For Opponent Reveal...
+            </WaitingText>
           )}
         </PlayerStatus>
       </PlayerContainer>
@@ -334,41 +357,44 @@ function Challenge() {
           {game.commit1 === ZERO_BYTES32 ? (
             <>
               <WaitingText isPlayer1={true}>Waiting For You...</WaitingText>
-              {!attesting && signer ? <HandSelection>
-                <HandOption
-                  onClick={() => {
-                    commit(CHOICE_ROCK);
-                  }}
-                >
-                  🪨
-                </HandOption>
-                <HandOption
-                  onClick={() => {
-                    commit(CHOICE_PAPER);
-                  }}
-                >
-                  📄
-                </HandOption>
-                <HandOption
-                  onClick={() => {
-                    commit(CHOICE_SCISSORS);
-                  }}
-                >
-                  ✂️
-                </HandOption>
-              </HandSelection> : !attesting?
-                <AwaitingSignerMessage/>
-                : null
-              }
+              {!attesting && signer ? (
+                <HandSelection>
+                  <HandOption
+                    onClick={() => {
+                      commit(CHOICE_ROCK);
+                    }}
+                  >
+                    🪨
+                  </HandOption>
+                  <HandOption
+                    onClick={() => {
+                      commit(CHOICE_PAPER);
+                    }}
+                  >
+                    📄
+                  </HandOption>
+                  <HandOption
+                    onClick={() => {
+                      commit(CHOICE_SCISSORS);
+                    }}
+                  >
+                    ✂️
+                  </HandOption>
+                </HandSelection>
+              ) : !attesting ? (
+                <AwaitingSignerMessage />
+              ) : null}
             </>
           ) : (
             <InGameChosenIcon
               choice={
-                game.choice1 !== CHOICE_UNKNOWN ? game.choice1
-                  : decrpytedChoice !== CHOICE_UNKNOWN ? decrpytedChoice
-                    : thisGameCommit && thisGameCommit.choice !== CHOICE_UNKNOWN ?
-                      thisGameCommit.choice
-                      : CHOICE_UNKNOWN
+                game.choice1 !== CHOICE_UNKNOWN
+                  ? game.choice1
+                  : decrpytedChoice !== CHOICE_UNKNOWN
+                  ? decrpytedChoice
+                  : thisGameCommit && thisGameCommit.choice !== CHOICE_UNKNOWN
+                  ? thisGameCommit.choice
+                  : CHOICE_UNKNOWN
               }
             />
           )}

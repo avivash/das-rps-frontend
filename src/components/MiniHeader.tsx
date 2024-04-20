@@ -48,6 +48,7 @@ export default function MiniHeader({
     <Container>
       {links.map((link, index) => (
         <HeaderItem
+          key={index}
           selected={selected === index}
           onClick={() => navigate(link.url)}
         >

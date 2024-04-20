@@ -1,16 +1,17 @@
-import {Header} from "./components/Header";
-import {Outlet} from "react-router";
+import { Header } from "./components/Header";
+import { Outlet } from "react-router";
 import * as chains from "wagmi/chains";
-import {configureChains} from "wagmi";
-import {ConnectKitProvider} from "connectkit";
+import { configureChains } from "wagmi";
+import { ConnectKitProvider } from "connectkit";
 import "./App.css";
 import invariant from "tiny-invariant";
-import {activeChainConfig} from "./utils/utils";
-import {WrongChainModal} from "./components/WrongChainModal";
+import { activeChainConfig } from "./utils/utils";
+import { degenChain } from "./utils/wagmi-utils";
+import { WrongChainModal } from "./components/WrongChainModal";
 import Footer from "./Footer";
-import {publicProvider} from "wagmi/providers/public";
-import {PrivyWagmiConnector} from "@privy-io/wagmi-connector";
-import {PrivyProvider} from "@privy-io/react-auth";
+import { publicProvider } from "wagmi/providers/public";
+import { PrivyWagmiConnector } from "@privy-io/wagmi-connector";
+import { PrivyProvider } from "@privy-io/react-auth";
 
 invariant(activeChainConfig, "Chain config is not set");
 
@@ -63,11 +64,15 @@ const allChains: ChainConfig[] = [
     // @ts-ignore
     chain: chains.baseGoerli,
   },
+  {
+    chainName: "degen",
+    chain: degenChain,
+  },
 ];
 
-const usableChains = allChains
-  .map((chain) => chain.chain);
+console.log("chains", chains);
 
+const usableChains = allChains.map((chain) => chain.chain);
 
 const config = configureChains(usableChains, [publicProvider()]);
 
@@ -87,11 +92,11 @@ export function Root() {
               enforceSupportedChains: false,
             }}
           >
-            <Header/>
-              <Outlet/>
-            <Footer/>
+            <Header />
+            <Outlet />
+            <Footer />
           </ConnectKitProvider>
-          <WrongChainModal/>
+          <WrongChainModal />
         </PrivyWagmiConnector>
       </PrivyProvider>
     </>
